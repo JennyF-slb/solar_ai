@@ -13,23 +13,23 @@ from geopy.geocoders import GoogleV3
 import io
 
 # Set the page title
-st.set_page_config(page_title="Solar AI Solutions", layout="centered")
+st.set_page_config(page_title="Solar AI Solutions", layout="wide")
 
 # Create a dropdown menu in the sidebar
 selected_page = st.sidebar.selectbox("Our Hub", ("Home", "What we do", "Contact us"))
 
 
 # Create a column layout with two columns
-title_column, logo_column = st.columns([3, 1])
+title_column, logo_column = st.columns([5,1])
 
 # Add content to the columns
 with title_column:
-    st.title(":blue[Solar AI Solutions]")
-    st.write("Welcome to Solar AI Solutions!")
+    st.title(":blue[AuTomatic detection Of Solar roof]")
+    st.subheader("Welcome to ATOS! Harness the power of Sunshine !")
     # Add more content to the left column as needed
 
 with logo_column:
-    st.image("image/Logo.png", width=150)  # Replace "image/Logo.png" with your logo image path
+    st.image("image/Final_v2.png", width=250)  # Replace "image/Logo.png" with your logo image path
 
 # Function to load and preprocess the image
 def load_image(image_bytes):
@@ -38,7 +38,6 @@ def load_image(image_bytes):
     img = np.array(img)
     img = np.expand_dims(img, axis=0)
     return img
-
 
 def model_from_json(json_string, custom_objects=None):
     from keras.layers import deserialize_from_json
@@ -117,6 +116,7 @@ if selected_page == "Home":
 
 elif selected_page == "What we do":
     tab1, tab2 = st.tabs(["With Images", "With Google Maps"])
+    button_col1, button_col2 = st.columns(2)
     with tab1:
 
         # Add content to the About page
@@ -136,33 +136,34 @@ elif selected_page == "What we do":
         else:
             st.text('Please upload your image')
 
-        if st.sidebar.button("Segment"):
-            with col2:
-                # Perform image segmentation
-                image = load_image(uploaded_image)
-                segmentation = perform_segmentation(image, selected_model)
+        with button_col1:
+        # Code for handling Button 1 click
+            if st.sidebar.button("Segment Image"):
+                with col2:
+                    # Perform image segmentation
+                    image = load_image(uploaded_image)
+                    segmentation = perform_segmentation(image, selected_model)
 
-                # Resize the segmentation to match the input image size
-                segmentation = cv2.resize(segmentation[0], (512, 512))
+                    # Resize the segmentation to match the input image size
+                    segmentation = cv2.resize(segmentation[0], (512, 512))
 
-                # Calculate the percentage of the area covered by the white mask
-                area_covered = np.sum(segmentation == 1)
-                total_pixels = segmentation.shape[0] * segmentation.shape[1]
-                percentage_covered = (area_covered / total_pixels) * 100
+                    # Calculate the percentage of the area covered by the white mask
+                    area_covered = np.sum(segmentation == 1)
+                    total_pixels = segmentation.shape[0] * segmentation.shape[1]
+                    percentage_covered = (area_covered / total_pixels) * 100
 
-                st.image(segmentation, caption=f"Segmentation Mask (Area covered: {percentage_covered:.2f}%)", use_column_width=True)
+                    st.image(segmentation, caption=f"Segmentation Mask (Area covered: {percentage_covered:.2f}%)", use_column_width=True)
 
     with tab2:
         # Create a geocoder instance
         geolocator = GoogleV3(api_key="AIzaSyCOzsbWrD24xWmtix3u9hlMfRTNf6EM80w")
-
         # Input for location name or coordinates
         location_input = st.text_input("Enter location name or coordinates (latitude, longitude)")
 
-        # Geocode the location
-        location = geolocator.geocode(location_input)
+        if location_input:
+            # Geocode the location
+            location = geolocator.geocode(location_input)
 
-        if location is not None:
             # Get the latitude and longitude
             latitude = location.latitude
             longitude = location.longitude
@@ -180,6 +181,22 @@ elif selected_page == "What we do":
             else:
                 st.text('Please set your location')
 
+        else:
+            # Get the latitude and longitude
+            latitude = 30.26
+            longitude = -97.74
+
+            # Generate the URL for the static satellite image
+            map_size = "512x512"  # Adjust the size as needed
+            zoom_level = 15  # Adjust the zoom level as needed
+
+            map_url = f"https://maps.googleapis.com/maps/api/staticmap?center={latitude},{longitude}&zoom={zoom_level}&size={map_size}&maptype=satellite&key={geolocator.api_key}"
+
+            # Download the image
+            response = requests.get(map_url)
+            if response.status_code == 200:
+                image_bytes = response.content
+
         if image_bytes is not None:
             # Convert image_bytes to TIFF format
             img = Image.open(io.BytesIO(image_bytes))
@@ -192,8 +209,11 @@ elif selected_page == "What we do":
             with col1:
                 # Display the snapped image
                 st.image(tiff_bytes, caption="Snapped Image", use_column_width=True)
+                        # Add a button to initiate segmentation
 
-            with col2:
+        with button_col2:
+            if st.sidebar.button("Segment Map"):
+                with col2:
                     # Convert TIFF image to OpenCV array
                     tiff_array = np.array(bytearray(tiff_bytes.read()), dtype=np.uint8)
                     image_cv2 = cv2.imdecode(tiff_array, cv2.IMREAD_COLOR)
@@ -214,5 +234,4 @@ elif selected_page == "What we do":
                     st.image(segmentation, caption=f"Segmentation Mask (Area covered: {percentage_covered:.2f}%)", use_column_width=True)
 
 elif selected_page == "Contact us":
-    st.title("About")
-    st.write("Welcome to the About page!")
+    st.image("image/Team.png", width=1200)  # Replace "image/Logo.png" with your logo image path
