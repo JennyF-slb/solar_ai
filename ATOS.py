@@ -1,19 +1,16 @@
 import streamlit as st
 from streamlit import components
-import altair as alt
-import pandas as pd
 import numpy as np
-import os, urllib, cv2
 import base64
 from PIL import Image
 import tensorflow as tf
 import requests
-import geopy
-from geopy.geocoders import GoogleV3
 import io
+import cv2
+from geopy.geocoders import GoogleV3
 
 # Set the page title
-st.set_page_config(page_title="Solar AI Solutions", layout="wide")
+st.set_page_config(page_title="ATOS", layout="wide")
 
 # Create a dropdown menu in the sidebar
 selected_page = st.sidebar.selectbox("Our Hub", ("Home", "What we do", "Contact us"))
